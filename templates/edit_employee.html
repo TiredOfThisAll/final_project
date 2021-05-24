@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="w-50 mt-2" id="new-department-form">
+        <h2 class="text-info">Edit Employee</h2>
+        <select class="form-select" id="edit-employee-department-id">
+              {% for department in departments %}
+                {% if department.id == employee.department_id %}
+                    <option value="{{ department.id }}" selected>{{ department.name }}</option>
+                {% else %}
+                    <option value="{{ department.id }}">{{ department.name }}</option>
+                {% endif %}
+              {% endfor %}
+        </select>
+        <input type="text" class="form-control mt-3" id="edit-employee-name" value="{{ employee.first_name }}">
+        <input type="text" class="form-control mt-3" id="edit-employee-surname" value="{{ employee.last_name }}">
+        <select class="form-select mt-2" id="edit-employee-gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="No choice">No choice</option>
+        </select>
+        <input type="number" class="form-control mt-2" id="edit-employee-age" value="{{ employee.age }}">
+        <input type="text" class="form-control mt-2" id="edit-employee-position" value="{{ employee.position }}">
+        <input type="number" class="form-control mt-2" id="edit-employee-salary" value="{{ employee.salary }}">
+        <button type="submit" class="btn btn-primary mt-3" onclick="editEmployee({{ employee.id }})">Submit</button>
+    </div>
+{% endblock content %}

@@ -1,0 +1,5 @@
+{
+    "google_client_id": "config/google_client_id",
+    "google_client_secret": "config/google_client_secret",
+    "database": "db.db"
+}

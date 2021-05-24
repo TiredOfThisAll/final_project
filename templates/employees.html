@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="col-8">
+            <a class="bi bi-plus-square btn btn-outline-primary" href="#new-employee-form" onclick="setFormVisibility({{ '"new-employee-form"' }})"> Add employee</a>
+        </div>
+        {% if search_query %}
+            <div class="input-group">
+                <input type="text" id="search-employees" class="form-control" value="{{ search_query }}" aria-label="Search by name" aria-describedby="button-addon2">
+                <button class="btn btn-outline-primary" type="button" id="button-addon1" onclick="searchEmployee()">Search</button>
+            </div>
+        {% else %}
+            <div class="input-group">
+                <input type="text" id="search-employees" class="form-control" placeholder="Search by name" aria-label="Search by name" aria-describedby="button-addon2">
+                <button class="btn btn-outline-primary" type="button" id="button-addon2" onclick="searchEmployee()">Search</button>
+            </div>
+        {% endif %}
+    </div>
+    <div class="w-50 mt-2" id="new-employee-form" style="display: none; transition: all 1s ease-in-out">
+        <h2 class="text-info">Add employee</h2>
+        <select class="form-select" id="new-employee-department-id">
+          {% for department in departments %}
+            <option value="{{ department.id }}">{{ department.name }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" class="form-control mt-2" id="new-employee-name" placeholder="Employee first name">
+        <input type="text" class="form-control mt-2" id="new-employee-surname" placeholder="Employee last name">
+        <select class="form-select mt-2" id="new-employee-gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="No choice">No choice</option>
+        </select>
+        <input type="number" class="form-control mt-2" id="new-employee-age" placeholder="Employee age">
+        <input type="text" class="form-control mt-2" id="new-employee-position" placeholder="Employee position">
+        <input type="number" class="form-control mt-2" id="new-employee-salary" placeholder="Employee salary">
+        <button type="submit" class="btn btn-primary mt-3" onclick="newEmployee()">Submit</button>
+    </div>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>
+                    ID
+                    {% if search_query %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query) }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query, sort='id', direction='desc') }}"></a>
+                    {% else %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('employees') }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('employees', sort='id', direction='desc') }}"></a>
+                    {% endif %}
+                </th>
+                <th>
+                    Department
+                    {% if search_query %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query, sort='department_id', direction='asc') }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query, sort='department_id', direction='desc') }}"></a>
+                    {% else %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('employees', sort='department_id', direction='asc') }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('employees', sort='department_id', direction='desc') }}"></a>
+                    {% endif %}
+                </th>
+                <th>
+                    First name
+                </th>
+                <th>
+                    Last name
+                </th>
+                <th>
+                    Gender
+                </th>
+                <th>
+                    Age
+                    {% if search_query %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query, sort='age', direction='asc') }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query, sort='age', direction='desc') }}"></a>
+                    {% else %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('employees', sort='age', direction='asc') }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('employees', sort='age', direction='desc') }}"></a>
+                    {% endif %}
+                </th>
+                <th>
+                    Position
+                </th>
+                <th>
+                    Salary $
+                    {% if search_query %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query, sort='salary', direction='asc') }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('search-employees', q=search_query, sort='salary', direction='desc') }}"></a>
+                    {% else %}
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('employees', sort='salary', direction='asc') }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('employees', sort='salary', direction='desc') }}"></a>
+                    {% endif %}
+                </th>
+                <th>
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.id }}</td>
+                    <td>{{ employee.department_id }}</td>
+                    <td>{{ employee.first_name|e }}</td>
+                    <td>{{ employee.last_name|e }}</td>
+                    <td>{{ employee.gender|e }}</td>
+                    <td>{{ employee.age }}</td>
+                    <td>{{ employee.position|e }}</td>
+                    <td>{{ employee.salary }}</td>
+                    <td>
+                        <i class="bi bi-trash-fill btn btn-danger" onclick='deleteEmployee({{ employee.id }}, {{ employee.last_name|tojson }}, {{ employee.first_name|tojson }}, {{ employee.department_id }})'></i>
+                        <a href="{{ url_for('edit_employee', id=employee.id) }}"><i class="bi bi-pencil-square btn btn-info"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
