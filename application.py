@@ -338,6 +338,7 @@ def display_employees_search_result():
         return render_template(
             "employees.html",
             employees=employees,
+            departments=context.repository.get_departments(),
             search_query=search_query
         )
 
