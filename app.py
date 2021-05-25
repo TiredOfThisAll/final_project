@@ -65,7 +65,7 @@ with create_sqlite_connection(DATABASE_PATH) as connection:
     repository.commit()
 
 # Flask set-up
-app = Flask(
+application = Flask(
     __name__,
     template_folder=os.path.join(PROJECT_PATH, "templates"),
     static_folder=os.path.join(PROJECT_PATH, "static")
