@@ -355,7 +355,19 @@ def edit_employee(id):
     )
 
 
-@app.route("/api/departments/<int:id>", methods=["DELETE"])
+@application.route("/admins", endpoint="admins")
+@login_required
+def admins():
+    admins = context.repository.get_admins()
+    users = context.repository.get_users()
+    return render_template(
+        "admins.html",
+        admins=admins,
+        users=users
+    )
+
+
+@application.route("/api/departments/<int:id>", methods=["DELETE"])
 @login_required
 def delete_department(id):
     context.repository.delete_department(id)
@@ -432,5 +444,18 @@ def edit_employee_api(id):
     return "", 204
 
 
+@application.route("/api/admins/add", methods=["POST"])
+@login_required
+def add_admin():
+    id = request.data.decode("utf-8")
+    user = context.repository.get_user(id)
+    error = context.repository.add_admin(user)
+    if error == "Duplicate admins":
+        return error, 418
+    context.repository.delete_user(id)
+    context.repository.commit()
+    return "", 204
+
+
 if __name__ == "__main__":
-    app.run(ssl_context="adhoc", port=443)
+    application.run(ssl_context="adhoc", port=443)
