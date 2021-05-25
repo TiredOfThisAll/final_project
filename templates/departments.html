@@ -31,8 +31,8 @@
                 <th>
                     ID
                     {% if search_query %}
-                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('search-departments', q=search_query, sort='id', direction='desc') }}"></a>
-                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('search-departments', q=search_query) }}"></a>
+                        <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('search-departments', q=search_query) }}"></a>
+                        <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('search-departments', q=search_query, sort='id', direction='desc') }}"></a>
                     {% else %}
                         <a class="bi bi-arrow-up text-decoration-none text-dark" href="{{ url_for('departments') }}"></a>
                         <a class="bi bi-arrow-down text-decoration-none text-dark" href="{{ url_for('departments', sort='id', direction='desc') }}"></a>
