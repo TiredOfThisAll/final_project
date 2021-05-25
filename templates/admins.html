@@ -1,10 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "layout.html" %}
+{% block content %}
+    <a class="bi bi-plus-square btn btn-outline-primary mt-2" href="#new-admin-form" onclick="setFormVisibility({{ '"new-admin-form"' }})"> Add admin</a>
+    <div class="w-50 mt-2" id="new-admin-form" style="display: none; transition: all 1s ease-in-out">
+        <h2 class="text-info">Add admin</h2>
+        <select class="form-select" id="new-admin">
+            {% if not users %}
+                <option value="">No available users</option>
+            {% else %}
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.email }}</option>
+                {% endfor %}
+            {% endif %}
+        </select>
+        <button type="submit" class="btn btn-primary mt-3" onclick="newAdmin()">Submit</button>
+    </div>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Email
+                </th>
+                <th>
+                    Profile pic
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for admin in admins %}
+                <tr>
+                    <th>
+                        {{ admin.id }}
+                    </th>
+                    <th>
+                        {{ admin.name }}
+                    </th>
+                    <th>
+                        {{ admin.email }}
+                    </th>
+                    <th>
+                        <img src="{{ admin.picture }}" alt="profile pic" class="img-fluid">
+                    </th>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
