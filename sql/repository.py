@@ -137,15 +137,32 @@ class Repository:
             return "DUPLICATE MEMBERS"
 
     def add_admin(self, user):
-        self.cursor.execute("""
-            INSERT INTO admins (user_id, name, email, profile_pic)
-            VALUES (:id, :name, :email, :picture)
-        """, {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "picture": user.picture
-        })
+        try:
+            self.cursor.execute("""
+                INSERT INTO admins (user_id, name, email, profile_pic)
+                VALUES (:id, :name, :email, :picture)
+                """, {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "picture": user.picture
+            })
+        except sqlite3.IntegrityError:
+            return "Duplicate admins"
+
+    def add_user(self, user):
+        try:
+            self.cursor.execute("""
+                INSERT INTO users (id, name, email, profile_pic)
+                VALUES (:id, :name, :email, :picture)
+            """, {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "picture": user.picture
+            })
+        except sqlite3.IntegrityError:
+            return "Duplicate users"
 
     def edit_employee(self, employee):
         try:
