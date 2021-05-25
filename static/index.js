@@ -276,6 +276,25 @@ const editEmployee = (id) => {
         });
 }
 
+const newAdmin = () => {
+    const userId = document.querySelector("#new-admin").value.trim();
+    if (userId === "") {
+        alert("No users were selected");
+        return;
+    }
+    fetch(`/api/admins/add`, {method: "POST", body:userId})
+        .then(response => {
+            if (response.status === 418) {
+                alert("This user is already admin");
+                return;
+            }
+            if (response.status !== 204) {
+                return Promise.reject();
+            }
+            location.reload();
+        });
+};
+
 const setFormVisibility = (formID) => {
     const myForm = document.getElementById(formID);
     myForm.style.display = myForm.style.display === "none" ? "block" : "none";
