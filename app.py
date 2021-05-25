@@ -65,15 +65,15 @@ with create_sqlite_connection(DATABASE_PATH) as connection:
     repository.commit()
 
 # Flask set-up
-app = Flask(
+application = Flask(
     __name__,
     template_folder=os.path.join(PROJECT_PATH, "templates"),
     static_folder=os.path.join(PROJECT_PATH, "static")
 )
 
-app.secret_key = GOOGLE_CLIENT_SECRET
+application.secret_key = GOOGLE_CLIENT_SECRET
 login_manager = LoginManager()
-login_manager.init_app(app)
+login_manager.init_app(application)
 
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
@@ -119,8 +119,8 @@ def teardown_context(exception):
 context = LocalProxy(inject_context)
 
 
-@app.route("/", endpoint="root")
-@app.route("/departments", endpoint="departments")
+@application.route("/", endpoint="root")
+@application.route("/departments", endpoint="departments")
 @login_required
 def departments():
     if "sort" in request.args:
@@ -133,7 +133,7 @@ def departments():
     )
 
 
-@app.route("/login")
+@application.route("/login", endpoint="login")
 def login():
     if request.args.get("error") == "1":
         return render_template(
@@ -151,7 +151,7 @@ def login():
         return "Smth went wrong", 400
 
 
-@app.route("/authorization")
+@application.route("/authorization")
 def authorization():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
@@ -164,7 +164,7 @@ def authorization():
     return redirect(request_uri)
 
 
-@app.route("/authorization/callback")
+@application.route("/authorization/callback")
 def authorization_callback():
     code = request.args.get("code")
 
@@ -196,28 +196,31 @@ def authorization_callback():
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
     else:
-        return "User email not available or not verified by Google.", 400
+        return redirect(url_for("login", error="1"), 302)
 
     user = User(
         unique_id, users_name, users_email, picture
     )
 
-    if not context.repository.is_user_admin(user):
-        return "You are not admin", 400
+    if context.repository.is_user_admin(user) is not True:
+        error = context.repository.add_user(user)
+        if not error:
+            context.repository.commit()
+        return redirect(url_for("login", error="2"), 302)
 
     login_user(user)
 
     return redirect(url_for("root"))
 
 
-@app.route("/logout")
+@application.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("login"))
 
 
-@app.route("/employees", endpoint="employees")
+@application.route("/employees", endpoint="employees")
 @login_required
 def employees():
     sort = request.args.get("sort")
@@ -239,7 +242,7 @@ def employees():
     )
 
 
-@app.route("/departments/<int:id>", endpoint="edit_department")
+@application.route("/departments/<int:id>", endpoint="edit_department")
 @login_required
 def edit_department(id):
     sort = request.args.get("sort")
@@ -260,7 +263,7 @@ def edit_department(id):
     )
 
 
-@app.route("/departments/search", endpoint="search-departments")
+@application.route("/departments/search", endpoint="search-departments")
 @login_required
 def display_department_search_result():
     sort_field = request.args.get("sort")
@@ -282,7 +285,7 @@ def display_department_search_result():
         )
 
 
-@app.route("/departments/<int:id>/search", endpoint="search-in-department")
+@application.route("/departments/<int:id>/search", endpoint="search-in-department")
 @login_required
 def search_in_department_view(id):
     sort_field = request.args.get("sort")
@@ -312,7 +315,7 @@ def search_in_department_view(id):
         )
 
 
-@app.route("/employees/search", endpoint="search-employees")
+@application.route("/employees/search", endpoint="search-employees")
 @login_required
 def display_employees_search_result():
     sort_field = request.args.get("sort")
@@ -339,7 +342,7 @@ def display_employees_search_result():
         )
 
 
-@app.route("/employees/<int:id>", endpoint="edit_employee")
+@application.route("/employees/<int:id>", endpoint="edit_employee")
 @login_required
 def edit_employee(id):
     employee = context.repository.get_employee_by_id(id)
@@ -360,7 +363,7 @@ def delete_department(id):
     return "", 204
 
 
-@app.route("/api/employees/<int:id>/<int:department_id>", methods=["DELETE"])
+@application.route("/api/employees/<int:id>/<int:department_id>", methods=["DELETE"])
 @login_required
 def delete_employee(id, department_id):
     context.repository.delete_employee(id, department_id)
@@ -368,7 +371,7 @@ def delete_employee(id, department_id):
     return "", 204
 
 
-@app.route("/api/departments/new-department", methods=["POST"])
+@application.route("/api/departments/new-department", methods=["POST"])
 @login_required
 def new_department():
     new_department_data = Department.from_tuple(
@@ -386,7 +389,7 @@ def new_department():
     return "", 204
 
 
-@app.route("/api/employees/new-employee", methods=["POST"])
+@application.route("/api/employees/new-employee", methods=["POST"])
 @login_required
 def new_employee():
     new_employee_data = Employee.from_tuple(
@@ -406,7 +409,7 @@ def new_employee():
     return "", 204
 
 
-@app.route("/api/department/<int:id>/rename", methods=["POST"])
+@application.route("/api/department/<int:id>/rename", methods=["POST"])
 @login_required
 def rename_department(id):
     new_name = request.data.decode("utf-8")
@@ -417,7 +420,7 @@ def rename_department(id):
     return "", 204
 
 
-@app.route("/api/employees/<int:id>/edit", methods=["POST"])
+@application.route("/api/employees/<int:id>/edit", methods=["POST"])
 @login_required
 def edit_employee_api(id):
     error = context.repository.edit_employee(Employee.from_tuple(
