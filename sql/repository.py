@@ -48,6 +48,14 @@ class Repository:
             profile_pic TEXT NOT NULL
             )
         """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+            id TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            profile_pic TEXT NOT NULL
+            )
+        """)
 
     def add_department(
             self,
