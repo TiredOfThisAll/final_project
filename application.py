@@ -133,7 +133,8 @@ def departments():
     )
 
 
-@application.route("/login", endpoint="login")
+
+@application.route("/login")
 def login():
     if request.args.get("error") == "1":
         return render_template(
@@ -354,6 +355,7 @@ def edit_employee(id):
         employee=employee,
         departments=context.repository.get_departments()
     )
+
 
 
 @application.route("/admins", endpoint="admins")
