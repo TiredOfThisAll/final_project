@@ -13,12 +13,15 @@
             <a class="link-light text-decoration-none col-3 row align-items-center py-2" href="{{ url_for('root') }}">
                 <div class="bi bi-house col-9 fs-3">Departments</div>
             </a>
-            <nav class="col-9 align-items-stretch row">
+            <nav class="col-9 align-items-stretch row justify-content-end">
                 <div class="d-flex col-auto align-items-center">
                     <a class="link-light text-decoration-none fs-5" href="{{ url_for('departments') }}">Departments</a>
                 </div>
                 <div class="d-flex col-auto align-items-center">
                     <a class="link-light text-decoration-none fs-5" href="{{ url_for('employees') }}">Employees</a>
+                </div>
+                <div class="d-flex col-auto align-items-center">
+                    <a class="link-light text-decoration-none fs-5" href="{{ url_for('admins') }}">Admins</a>
                 </div>
                 <div class="d-flex col-auto align-items-center">
                     <a class="link-light text-decoration-none fs-5" href="{{ url_for('login') }}">Login</a>

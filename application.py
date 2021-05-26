@@ -196,14 +196,17 @@ def authorization_callback():
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
     else:
-        return "User email not available or not verified by Google.", 400
+        return redirect(url_for("login", error="1"), 302)
 
     user = User(
         unique_id, users_name, users_email, picture
     )
 
-    if not context.repository.is_user_admin(user):
-        return "You are not admin", 400
+    if context.repository.is_user_admin(user) is not True:
+        error = context.repository.add_user(user)
+        if not error:
+            context.repository.commit()
+        return redirect(url_for("login", error="2"), 302)
 
     login_user(user)
 
@@ -335,6 +338,7 @@ def display_employees_search_result():
         return render_template(
             "employees.html",
             employees=employees,
+            departments=context.repository.get_departments(),
             search_query=search_query
         )
 
@@ -349,6 +353,18 @@ def edit_employee(id):
         "edit_employee.html",
         employee=employee,
         departments=context.repository.get_departments()
+    )
+
+
+@application.route("/admins", endpoint="admins")
+@login_required
+def admins():
+    admins = context.repository.get_admins()
+    users = context.repository.get_users()
+    return render_template(
+        "admins.html",
+        admins=admins,
+        users=users
     )
 
 
@@ -425,6 +441,19 @@ def edit_employee_api(id):
     ))
     if error:
         return error, 418
+    context.repository.commit()
+    return "", 204
+
+
+@application.route("/api/admins/add", methods=["POST"])
+@login_required
+def add_admin():
+    id = request.data.decode("utf-8")
+    user = context.repository.get_user(id)
+    error = context.repository.add_admin(user)
+    if error == "Duplicate admins":
+        return error, 418
+    context.repository.delete_user(id)
     context.repository.commit()
     return "", 204
 

@@ -48,6 +48,14 @@ class Repository:
             profile_pic TEXT NOT NULL
             )
         """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+            id TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            profile_pic TEXT NOT NULL
+            )
+        """)
 
     def add_department(
             self,
@@ -129,15 +137,32 @@ class Repository:
             return "DUPLICATE MEMBERS"
 
     def add_admin(self, user):
-        self.cursor.execute("""
-            INSERT INTO admins (user_id, name, email, profile_pic)
-            VALUES (:id, :name, :email, :picture)
-        """, {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "picture": user.picture
-        })
+        try:
+            self.cursor.execute("""
+                INSERT INTO admins (user_id, name, email, profile_pic)
+                VALUES (:id, :name, :email, :picture)
+                """, {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "picture": user.picture
+            })
+        except sqlite3.IntegrityError:
+            return "Duplicate admins"
+
+    def add_user(self, user):
+        try:
+            self.cursor.execute("""
+                INSERT INTO users (id, name, email, profile_pic)
+                VALUES (:id, :name, :email, :picture)
+            """, {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "picture": user.picture
+            })
+        except sqlite3.IntegrityError:
+            return "Duplicate users"
 
     def edit_employee(self, employee):
         try:
@@ -247,11 +272,28 @@ class Repository:
         return list(map(User.from_tuple, admins_tuple))
 
     def get_admin(self, user_id):
-        user = self.cursor.execute("""
+        admin = self.cursor.execute("""
             SELECT *
             FROM admins
             WHERE user_id = ?
-        """, (user_id,)).fetchone()
+        """, (str(user_id),)).fetchone()
+        if not admin:
+            return None
+        return User.from_tuple(admin)
+
+    def get_users(self):
+        users_tuple = self.cursor.execute("""
+            SELECT *
+            FROM users
+        """).fetchall()
+        return list(map(User.from_tuple, users_tuple))
+
+    def get_user(self, id):
+        user = self.cursor.execute("""
+            SELECT *
+            FROM users
+            WHERE id = ?
+        """, (str(id), )).fetchone()
         if not user:
             return None
         return User.from_tuple(user)
@@ -261,7 +303,7 @@ class Repository:
             SELECT *
             FROM admins
             WHERE user_id = ?
-        """, (user.id, ))
+        """, (user.id, )).fetchone()
         return user_tuple is not None
 
     def delete_department(self, id):
@@ -277,6 +319,13 @@ class Repository:
             FROM employees
             WHERE id = ? AND department_id = ?
         """, (id, department_id))
+
+    def delete_user(self, id):
+        self.cursor.execute("""
+            DELETE
+            FROM users
+            WHERE id = ?
+        """, (str(id),))
 
     def search_department_by_name(self, search_query):
         search_tuples = self.cursor.execute("""

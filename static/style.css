@@ -40,6 +40,10 @@
   font-family: 'Roboto',arial,sans-serif;
 }
 
+.error-alert {
+  margin-right: 110px;
+}
+
 button ~ button {
   margin-left: 20px;
 }
