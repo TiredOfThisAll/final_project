@@ -17,6 +17,7 @@ PROJECT_PATH = os.path.abspath(os.path.join(__file__, ".."))
 
 config_file_path = os.path.join(PROJECT_PATH, "config", "configuration.json")
 
+# open configuration file
 with open(config_file_path) as configuration_file:
     configuration_dict = json.loads(configuration_file.read())
 
