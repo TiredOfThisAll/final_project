@@ -252,9 +252,11 @@ def edit_department(id):
         if sort not in COLUMNS:
             return "Bad request", 400
         if direction == "desc":
-            employees = context.repository.get_employees_by_department_id_desc(id, sort)
+            employees = context.repository\
+                .get_employees_by_department_id_desc(id, sort)
         else:
-            employees = context.repository.get_employees_by_department_id(id, sort)
+            employees = context.repository\
+                .get_employees_by_department_id(id, sort)
     else:
         employees = context.repository.get_employees_by_department_id(id)
     return render_template(
@@ -275,7 +277,8 @@ def display_department_search_result():
         departments = context.repository.search_department_by_name_desc(
             search_query)
     else:
-        departments = context.repository.search_department_by_name(search_query)
+        departments = context.repository\
+            .search_department_by_name(search_query)
     if not departments:
         return "No results", 418
     if search_query:
@@ -286,7 +289,9 @@ def display_department_search_result():
         )
 
 
-@application.route("/departments/<int:id>/search", endpoint="search-in-department")
+@application.route(
+    "/departments/<int:id>/search",
+    endpoint="search-in-department")
 @login_required
 def search_in_department_view(id):
     sort_field = request.args.get("sort")
@@ -299,12 +304,11 @@ def search_in_department_view(id):
             employees = context.repository.search_employees_in_department_desc(
                 id, search_query, sort_field)
         else:
-            employees = context.repository.search_employees_in_department(id,
-                                                                          search_query,
-                                                                          sort_field)
+            employees = context.repository\
+                .search_employees_in_department(id, search_query, sort_field)
     else:
-        employees = context.repository.search_employees_in_department(id,
-                                                                      search_query)
+        employees = context.repository\
+            .search_employees_in_department(id, search_query)
     if not employees:
         return "No results", 418
     if search_query:
@@ -326,11 +330,11 @@ def display_employees_search_result():
         if sort_field not in COLUMNS:
             return "Bad request", 400
         if direction == "desc":
-            employees = context.repository.search_employees_desc(search_query,
-                                                                 sort_field)
+            employees = context.repository\
+                .search_employees_desc(search_query, sort_field)
         else:
-            employees = context.repository.search_employees(search_query,
-                                                            sort_field)
+            employees = context.repository\
+                .search_employees(search_query, sort_field)
     else:
         employees = context.repository.search_employees(search_query)
     if not employees:
@@ -377,7 +381,9 @@ def delete_department(id):
     return "", 204
 
 
-@application.route("/api/employees/<int:id>/<int:department_id>", methods=["DELETE"])
+@application.route(
+    "/api/employees/<int:id>/<int:department_id>",
+    methods=["DELETE"])
 @login_required
 def delete_employee(id, department_id):
     context.repository.delete_employee(id, department_id)
@@ -460,4 +466,4 @@ def add_admin():
 
 
 if __name__ == "__main__":
-    application.run(ssl_context="adhoc", host="0.0.0.0", port=443)
+    application.run(ssl_context="adhoc", port=443)
