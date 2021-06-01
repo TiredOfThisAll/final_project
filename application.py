@@ -21,6 +21,7 @@ config_file_path = os.path.join(PROJECT_PATH, "config", "configuration.json")
 with open(config_file_path) as configuration_file:
     configuration_dict = json.loads(configuration_file.read())
 
+# get path to google client id and token
 google_client_id_path = os.path.join(
     PROJECT_PATH,
     configuration_dict["google_client_id"]
@@ -39,6 +40,7 @@ if not os.path.exists(google_client_secret_path):
     print(f"You need the token file at {google_client_secret_path}")
     exit(1)
 
+# get google client id and token
 with open(google_client_id_path) as google_client_id_file:
     GOOGLE_CLIENT_ID = google_client_id_file.readline()
     if GOOGLE_CLIENT_ID[-1] == "\n":
@@ -49,6 +51,7 @@ with open(google_client_secret_path) as google_client_secret_file:
     if GOOGLE_CLIENT_SECRET[-1] == "\n":
         GOOGLE_CLIENT_SECRET = GOOGLE_CLIENT_SECRET[:-1]
 
+# google discovery document url
 GOOGLE_DISCOVERY_URL = (
     "https://accounts.google.com/.well-known/openid-configuration"
 )
@@ -72,6 +75,7 @@ application = Flask(
     static_folder=os.path.join(PROJECT_PATH, "static")
 )
 
+# set-up login manger
 application.secret_key = GOOGLE_CLIENT_SECRET
 login_manager = LoginManager()
 login_manager.init_app(application)
@@ -93,6 +97,7 @@ def unathorized():
     return redirect(url_for("login"))
 
 
+# set-up db context
 class Context:
     def __init__(self):
         self.connection = create_sqlite_connection(DATABASE_PATH)
@@ -154,9 +159,11 @@ def login():
 
 @application.route("/authorization")
 def authorization():
+    # get google authorization endpoint
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
+    # authorization request
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=request.base_url + "/callback",
@@ -172,6 +179,7 @@ def authorization_callback():
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
 
+    # exchanging received code on token
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
@@ -185,12 +193,14 @@ def authorization_callback():
         auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
 
+    # use token to get user info
     client.parse_request_body_response(json.dumps(token_response.json()))
 
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
 
+    # parse user info if email is verified
     if userinfo_response.json().get("email_verified"):
         unique_id = userinfo_response.json()["sub"]
         users_email = userinfo_response.json()["email"]
@@ -203,12 +213,14 @@ def authorization_callback():
         unique_id, users_name, users_email, picture
     )
 
+    # add user into users table if he is not an admin
     if context.repository.is_user_admin(user) is not True:
         error = context.repository.add_user(user)
         if not error:
             context.repository.commit()
         return redirect(url_for("login", error="2"), 302)
 
+    # login user if he is an admin
     login_user(user)
 
     return redirect(url_for("root"))
@@ -373,6 +385,7 @@ def admins():
     )
 
 
+# api methods
 @application.route("/api/departments/<int:id>", methods=["DELETE"])
 @login_required
 def delete_department(id):
